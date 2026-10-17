@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+    <key>CFBundleExecutable</key><string>EncoBar</string>
+    <key>CFBundleIdentifier</key><string>local.encobar.air4pro</string>
+    <key>CFBundleName</key><string>EncoBar</string>
+    <key>CFBundleDisplayName</key><string>EncoBar</string>
+    <key>CFBundlePackageType</key><string>APPL</string>
+    <key>CFBundleShortVersionString</key><string>0.3.2</string>
+    <key>CFBundleVersion</key><string>10</string>
+    <key>CFBundleIconFile</key><string>AppIcon</string>
+    <key>LSMinimumSystemVersion</key><string>13.0</string>
+    <key>LSUIElement</key><true/>
+    <key>NSHighResolutionCapable</key><true/>
+    <key>NSBluetoothAlwaysUsageDescription</key><string>连接你的 OPPO Enco Air4 Pro，读取耳机电量并切换降噪和通透模式。</string>
+    <key>NSBluetoothPeripheralUsageDescription</key><string>读取 OPPO 耳机电量与降噪模式。</string>
+</dict></plist>

@@ -1,0 +1,15 @@
+.build/
+.swiftpm/
+dist/
+.local/
+.DS_Store
+*.log
+__pycache__/
+*.py[cod]
+.env
+.env.*
+*.p12
+*.p8
+*.pem
+*.key
+*.mobileprovision

@@ -1,0 +1,29 @@
+name: 问题反馈
+description: 反馈连接、电量、模式切换或界面问题
+body:
+  - type: input
+    id: app-version
+    attributes:
+      label: EncoBar 版本
+      placeholder: 例如 0.3.1
+    validations:
+      required: true
+  - type: input
+    id: macos-version
+    attributes:
+      label: macOS 版本与 Mac 芯片
+      placeholder: 例如 macOS 26，Apple M1
+    validations:
+      required: true
+  - type: input
+    id: headphones
+    attributes:
+      label: 耳机型号与固件版本（若知道）
+      placeholder: OPPO Enco Air4 Pro
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤、预期结果和实际结果
+      description: 可附面板截图。请勿附蓝牙地址、序列号、个人路径或未经检查的原始日志。
+    validations:
+      required: true

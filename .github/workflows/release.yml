@@ -1,0 +1,48 @@
+name: Release draft
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag, for example v0.3.1
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  draft:
+    runs-on: macos-26
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    env:
+      RELEASE_TAG: ${{ inputs.tag }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.tag }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check existing version tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          task_version=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Resources/Info.plist)
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          [[ "$RELEASE_TAG" == "v$task_version" ]]
+          [[ "$(git rev-parse "refs/tags/$RELEASE_TAG^{commit}")" == "$(git rev-parse HEAD)" ]]
+      - name: Test and prepare release files
+        run: bash scripts/release.sh
+      - name: Create draft and upload files
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          task_directory="dist/releases/$RELEASE_TAG"
+          gh release create "$RELEASE_TAG" "$task_directory"/* \
+            --draft --verify-tag --title "EncoBar $RELEASE_TAG" \
+            --notes-file "$task_directory/RELEASE_NOTES.md"

@@ -19,6 +19,25 @@ guard let application = UninstallLayout.application(containingHelper: executable
 }
 let home = URL(fileURLWithPath: NSHomeDirectory(), isDirectory: true)
 let data = UninstallLayout.dataLocations(home: home)
+if CommandLine.arguments.contains("--migrate-legacy-install") {
+    guard application.path == "/Applications/EncoBar.app", getuid() != 0 else { exit(1) }
+    if let legacy = UninstallLayout.legacyApplication(home: home) {
+        do {
+            try FileManager.default.trashItem(at: legacy, resultingItemURL: nil)
+            // rmdir is atomic and refuses a directory containing any other app.
+            _ = runTool("/bin/rmdir", [legacy.deletingLastPathComponent().path])
+        } catch {
+            fputs("旧版 EncoBar 未能移至废纸篓：\(error.localizedDescription)\n", stderr)
+            exit(1)
+        }
+    }
+    if runTool("/usr/sbin/pkgutil", ["--volume", home.path, "--pkg-info", UninstallLayout.packageID]),
+       !runTool("/usr/sbin/pkgutil", ["--volume", home.path, "--forget", UninstallLayout.packageID]) {
+        fputs("旧版个人安装收据未能移除。\n", stderr)
+        exit(1)
+    }
+    exit(0)
+}
 if CommandLine.arguments.contains("--list") {
     let output = ["application": application.path, "data": data.map(\.path), "receipt": UninstallLayout.packageID] as [String: Any]
     let encoded = try JSONSerialization.data(withJSONObject: output, options: [.prettyPrinted, .sortedKeys])
@@ -33,7 +52,8 @@ app.finishLaunching()
 app.activate(ignoringOtherApps: true)
 let confirm = NSAlert()
 confirm.messageText = "卸载 EncoBar？"
-confirm.informativeText = "将退出 EncoBar，把应用及本用户的电量记录、缓存和保存状态移至废纸篓，并撤销它的蓝牙授权和安装收据。\n\n不会搜索或清理源码、其他应用以及其他用户的文件。"
+let systemInstallation = application.path == "/Applications/EncoBar.app"
+confirm.informativeText = "将退出 EncoBar，把应用及本用户的电量记录、缓存和保存状态移至废纸篓，并撤销它的蓝牙授权和安装收据。\n\n" + (systemInstallation ? "移除系统应用和收据需要管理员授权，其他用户将无法再运行此应用。其他用户的数据会保留。" : "不会搜索或清理源码、其他应用以及其他用户的文件。")
 confirm.addButton(withTitle: "取消")
 confirm.addButton(withTitle: "卸载")
 guard confirm.runModal() == .alertSecondButtonReturn else { exit(0) }
@@ -59,6 +79,34 @@ if processes.contains(where: { !$0.isTerminated }) {
     exit(1)
 }
 
+// Request elevation before clearing any user data; cancelling leaves those files intact.
+if systemInstallation {
+    do {
+        try FileManager.default.createDirectory(at: home.appendingPathComponent(".Trash"), withIntermediateDirectories: true)
+        guard let command = UninstallLayout.systemRemovalCommand(application: application, home: home, token: UUID()) else { exit(1) }
+        let literal = command.replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
+            .replacingOccurrences(of: "\n", with: "\\n")
+        var scriptError: NSDictionary?
+        let script = NSAppleScript(source: "do shell script \"\(literal)\" with administrator privileges")
+        _ = script?.executeAndReturnError(&scriptError)
+        if script == nil || scriptError != nil || FileManager.default.fileExists(atPath: application.path) {
+            if scriptError?[NSAppleScript.errorNumber] as? Int == -128 { exit(0) }
+            let alert = NSAlert()
+            alert.messageText = "系统应用未能完整移除"
+            alert.informativeText = "\(scriptError?[NSAppleScript.errorMessage] ?? "请重新尝试卸载。")\n\n个人电量记录及偏好尚未清理。应用可能已在废纸篓中。"
+            alert.runModal()
+            exit(1)
+        }
+    } catch {
+        let alert = NSAlert()
+        alert.messageText = "无法访问废纸篓"
+        alert.informativeText = error.localizedDescription
+        alert.runModal()
+        exit(1)
+    }
+}
+
 // Move exact owned paths, never match names across the user's filesystem.
 for item in data where FileManager.default.fileExists(atPath: item.path) {
     do { try FileManager.default.trashItem(at: item, resultingItemURL: nil) }
@@ -82,8 +130,10 @@ if runTool("/usr/sbin/pkgutil", ["--volume", home.path, "--pkg-info", UninstallL
    !runTool("/usr/sbin/pkgutil", ["--volume", home.path, "--forget", UninstallLayout.packageID]) {
     failures.append("安装收据未能自动移除。")
 }
-do { try FileManager.default.trashItem(at: application, resultingItemURL: nil) }
-catch { failures.append("应用：\(error.localizedDescription)") }
+if !systemInstallation {
+    do { try FileManager.default.trashItem(at: application, resultingItemURL: nil) }
+    catch { failures.append("应用：\(error.localizedDescription)") }
+}
 
 let result = NSAlert()
 result.messageText = failures.isEmpty ? "EncoBar 已卸载" : "卸载未全部完成"

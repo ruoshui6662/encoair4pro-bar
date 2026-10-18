@@ -7,7 +7,7 @@ EncoBar 是一款 macOS 菜单栏小工具，用来查看 OPPO Enco Air4 Pro 的
 ## 安装
 
 1. 打开 [Releases 下载页](https://github.com/ruoshui6662/encoair4pro-bar/releases/latest)。
-2. 下载 `EncoBar-0.3.2-macos-arm64.pkg`，双击后按提示安装。
+2. 下载 `EncoBar-0.3.3-macos-arm64.pkg`，退出旧版后双击，按提示输入管理员密码，安装到系统“应用程序”文件夹（`/Applications`）。升级会将当前登录用户个人 Applications 文件夹中的已识别旧版移至废纸篓，保留电量记录。
 3. 在 Mac 的“系统设置 → 蓝牙”中连接耳机，然后打开“应用程序”里的 EncoBar。
 4. 首次打开时，允许 EncoBar 使用蓝牙。
 
@@ -18,7 +18,7 @@ EncoBar 是一款 macOS 菜单栏小工具，用来查看 OPPO Enco Air4 Pro 的
 1. 在提示窗口点“完成”或“好”，不要把安装包移到废纸篓。
 2. 打开 Mac 的“系统设置 → 隐私与安全性”，向下滚动到“安全性”区域。
 3. 找到关于 EncoBar 安装包的提示，点“仍要打开”，并按提示确认。
-4. 重新双击 `EncoBar-0.3.2-macos-arm64.pkg` 安装。如果安装后首次打开 EncoBar 仍被拦截，先尝试打开一次，再回到“隐私与安全性”点 EncoBar 旁边的“仍要打开”，然后确认打开。
+4. 重新双击 `EncoBar-0.3.3-macos-arm64.pkg` 安装。如果安装后首次打开 EncoBar 仍被拦截，先尝试打开一次，再回到“隐私与安全性”点 EncoBar 旁边的“仍要打开”，然后确认打开。
 
 只对从本项目 [Releases](https://github.com/ruoshui6662/encoair4pro-bar/releases/latest) 下载且文件名匹配的 EncoBar 操作。不要为此关闭 Mac 的整体安全保护。更多说明见 [Apple 官方帮助](https://support.apple.com/zh-cn/102445)。
 
@@ -28,7 +28,7 @@ EncoBar 是一款 macOS 菜单栏小工具，用来查看 OPPO Enco Air4 Pro 的
 
 ## 删除
 
-点击面板右上角“…”→“卸载 EncoBar…”，再确认卸载。卸载工具会删除 EncoBar 自己保存的数据和蓝牙授权，并将应用移到废纸篓。
+点击面板右上角“…”→“卸载 EncoBar…”，再确认并按提示输入管理员密码。卸载工具会清理当前用户的 EncoBar 数据、蓝牙授权和安装收据，并将系统应用移到废纸篓；其他用户的数据会保留。
 
 ## 支持的耳机
 
@@ -39,4 +39,3 @@ EncoBar 是一款 macOS 菜单栏小工具，用来查看 OPPO Enco Air4 Pro 的
 ## 开发与许可
 
 本项目采用 [MIT 许可证](LICENSE)，允许使用和修改并保留署名。构建说明见[开发文档](docs/development.md)。本项目为独立社区工具，与 OPPO、OnePlus、realme 或 HeyMelody 无隶属关系。
-docs/images/panel.png: PNG image data, 600 x 480, 8-bit/color RGB, non-interlaced

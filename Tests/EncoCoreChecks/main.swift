@@ -12,6 +12,51 @@ func XCTUnwrap<T>(_ value: T?) throws -> T { guard let value else { failures += 
 func XCTAssertThrowsError<T>(_ expression: @autoclosure () throws -> T, line: UInt = #line) { do { _ = try expression(); failures += 1; print("FAIL expected throw at \(line)") } catch {} }
 
 final class ProtocolTests {
+    func testLegacyMigrationOnlySelectsOwnedBundleAtExactLocation() throws {
+        let manager = FileManager.default
+        let home = manager.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? manager.removeItem(at: home) }
+        let legacy = home.appendingPathComponent("Applications/EncoBar.app")
+        let contents = legacy.appendingPathComponent("Contents")
+        try manager.createDirectory(at: contents, withIntermediateDirectories: true)
+        let info = contents.appendingPathComponent("Info.plist")
+        try PropertyListSerialization.data(fromPropertyList: ["CFBundleIdentifier": "other.app"], format: .xml, options: 0).write(to: info)
+        XCTAssertNil(UninstallLayout.legacyApplication(home: home))
+        try PropertyListSerialization.data(fromPropertyList: ["CFBundleIdentifier": "local.encobar.air4pro"], format: .xml, options: 0).write(to: info)
+        XCTAssertEqual(UninstallLayout.legacyApplication(home: home)?.path, legacy.path)
+        let elsewhere = home.appendingPathComponent("SourceBackup.app")
+        try manager.moveItem(at: legacy, to: elsewhere)
+        try manager.createSymbolicLink(at: legacy, withDestinationURL: elsewhere)
+        XCTAssertNil(UninstallLayout.legacyApplication(home: home))
+        try manager.removeItem(at: home.appendingPathComponent("Applications"))
+        let linkedApps = home.appendingPathComponent("LinkedApplications")
+        try manager.createDirectory(at: linkedApps, withIntermediateDirectories: true)
+        try manager.moveItem(at: elsewhere, to: linkedApps.appendingPathComponent("EncoBar.app"))
+        try manager.createSymbolicLink(at: home.appendingPathComponent("Applications"), withDestinationURL: linkedApps)
+        XCTAssertNil(UninstallLayout.legacyApplication(home: home))
+    }
+
+    func testSystemUninstallRejectsOtherApplicationsAndQuotesUserPath() throws {
+        let home = URL(fileURLWithPath: "/Users/Example User", isDirectory: true)
+        let token = UUID(uuidString: "12345678-1234-1234-1234-123456789ABC")!
+        XCTAssertNil(UninstallLayout.systemRemovalCommand(application: home.appendingPathComponent("Applications/EncoBar.app"), home: home, token: token))
+        XCTAssertNil(UninstallLayout.systemRemovalCommand(application: URL(fileURLWithPath: "/Applications/Other.app"), home: home, token: token))
+        let command = try XCTUnwrap(UninstallLayout.systemRemovalCommand(application: URL(fileURLWithPath: "/Applications/EncoBar.app"), home: home, token: token))
+        XCTAssertTrue(command.contains("'/Applications/EncoBar.app'"))
+        XCTAssertTrue(command.contains("'/Users/Example User/.Trash/EncoBar-12345678-1234-1234-1234-123456789ABC.app'"))
+        let value = "space ' quote \" dollar $() newline\nend"
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/bin/sh")
+        process.arguments = ["-c", "printf %s " + UninstallLayout.shellLiteral(value)]
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        try process.run()
+        let output = pipe.fileHandleForReading.readDataToEndOfFile()
+        process.waitUntilExit()
+        XCTAssertEqual(process.terminationStatus, 0)
+        XCTAssertEqual(String(decoding: output, as: UTF8.self), value)
+    }
+
     func testWearingReportsPreserveUnknownAndDecodeIndependentFlags() {
         let out = WearingReport.parse(Frame(command: 0x8109, sequence: 4, payload: [0, 3, 1, 1, 2, 1, 3, 4]))
         XCTAssertEqual(out?.bothOutOfEar, true)
@@ -281,6 +326,8 @@ final class ProtocolTests {
 
 let tests = ProtocolTests()
 let checks: [(String, () throws -> Void)] = [
+    ("testLegacyMigrationOnlySelectsOwnedBundleAtExactLocation", tests.testLegacyMigrationOnlySelectsOwnedBundleAtExactLocation),
+    ("testSystemUninstallRejectsOtherApplicationsAndQuotesUserPath", tests.testSystemUninstallRejectsOtherApplicationsAndQuotesUserPath),
     ("testWearingReportsPreserveUnknownAndDecodeIndependentFlags", tests.testWearingReportsPreserveUnknownAndDecodeIndependentFlags),
     ("testWearAndFitNotificationsCannotChangeNoiseMode", tests.testWearAndFitNotificationsCannotChangeNoiseMode),
     ("testUninstallerOnlyTargetsItsOwnBundleAndUserData", tests.testUninstallerOnlyTargetsItsOwnBundleAndUserData),

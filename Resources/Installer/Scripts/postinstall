@@ -1,0 +1,11 @@
+#!/bin/bash
+set -euo pipefail
+# Migrate only the logged-in user's recognised legacy copy, as that user (never as root).
+[[ "${3:-/}" == / ]] || exit 0
+task_uid=$(/usr/bin/stat -f %u /dev/console)
+[[ "$task_uid" -ge 501 ]] || exit 0
+task_helper='/Applications/EncoBar.app/Contents/Helpers/EncoBar Uninstaller.app/Contents/MacOS/EncoBarUninstaller'
+if ! /usr/bin/sudo -u "#$task_uid" -H -- "$task_helper" --migrate-legacy-install; then
+    /usr/bin/logger -t EncoBar 'Legacy user installation could not be migrated; the system application is installed. See docs/user-guide.md.'
+fi
+exit 0

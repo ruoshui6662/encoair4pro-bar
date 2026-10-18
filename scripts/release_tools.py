@@ -117,8 +117,10 @@ def prepare(root):
         (stage / "RELEASE_NOTES.md").write_text(notes, encoding="utf-8")
         (stage / "INSTALL.txt").write_text(
             "EncoBar " + version + " — Apple Silicon / macOS 13+\n\n"
-            "安装：双击 PKG，安装到当前用户的 Applications 目录。首次启动允许蓝牙。\n"
-            "卸载：菜单栏面板的更多菜单 → 卸载 EncoBar，然后确认。\n"
+            "安装：退出旧版后双击 PKG，经管理员授权安装到 /Applications。首次启动允许蓝牙。\n"
+            "升级：当前登录用户的已识别旧版 ~/Applications/EncoBar.app 会移至废纸篓，保留电量记录。\n"
+            "卸载：菜单栏面板的更多菜单 → 卸载 EncoBar，确认后按提示授权。\n"
+            "如 macOS 拦截：先尝试打开，再到系统设置 → 隐私与安全性 → 仍要打开。\n"
             "App 使用 ad-hoc 签名；PKG 未签名、未公证。其他 Mac 可能被 Gatekeeper 阻止。\n"
             "公开分发前请完成 Developer ID 签名、公证和另一台 Mac 的验证。\n"
             "完整说明见源码中的 docs/user-guide.md。\n"

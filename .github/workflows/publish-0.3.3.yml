@@ -1,0 +1,51 @@
+name: Publish EncoBar 0.3.3
+
+on:
+  push:
+    branches: ["release/v0.3.3"]
+    paths: [".github/workflows/publish-0.3.3.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: macos-26
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: 514d9985b0b6351ddce4f823ef5ce3a256e44e5a
+          persist-credentials: false
+      - name: Test and prepare release files
+        run: bash scripts/release.sh
+      - name: Verify system installer destination
+        shell: bash
+        run: |
+          set -euo pipefail
+          pkgutil --expand-full dist/releases/v0.3.3/EncoBar-0.3.3-macos-arm64.pkg .build/publish-inspection
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          root = Path(".build/publish-inspection")
+          domains = ET.parse(root / "Distribution").getroot().find("domains").attrib
+          assert domains["enable_localSystem"] == "true"
+          assert domains["enable_currentUserHome"] == "false"
+          info = ET.parse(root / "EncoBar-component.pkg/PackageInfo").getroot()
+          assert info.attrib["install-location"] == "/Applications"
+          assert info.attrib["auth"] == "root"
+          print("System Applications destination verified")
+          PY
+      - name: Publish release and upload files
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Resources/Info.plist)" == "0.3.3" ]]
+          gh release create v0.3.3 dist/releases/v0.3.3/* \
+            --target 514d9985b0b6351ddce4f823ef5ce3a256e44e5a \
+            --title "EncoBar v0.3.3" --notes-file dist/releases/v0.3.3/RELEASE_NOTES.md --latest

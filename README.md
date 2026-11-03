@@ -1,5 +1,7 @@
 # EncoBar
 
+[简体中文](README.md) | [English](README.en.md)
+
 EncoBar 是一款 macOS 菜单栏小工具，用来查看 OPPO Enco Air4 Pro 的电量，并切换降噪、通透和关闭模式。
 
 ![EncoBar 面板截图](docs/images/panel.png)

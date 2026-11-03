@@ -12,7 +12,7 @@ import zipfile
 
 
 PUBLIC_DIRS = ("Sources", "Tests", "Resources", "scripts", "tools", "docs", ".github")
-PUBLIC_FILES = ("Package.swift", "README.md", "LICENSE", "NOTICE.md", "CHANGELOG.md",
+PUBLIC_FILES = ("Package.swift", "README.md", "README.en.md", "LICENSE", "NOTICE.md", "CHANGELOG.md",
                 "CONTRIBUTING.md", ".gitignore", ".gitattributes")
 REQUIRED_FILES = ("Package.swift", "LICENSE", "README.md", "Resources/Info.plist",
                   "Sources/EncoBar/main.swift", "scripts/build.sh")

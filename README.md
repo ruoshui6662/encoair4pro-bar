@@ -36,6 +36,17 @@ EncoBar 是一款 macOS 菜单栏小工具，用来查看 OPPO Enco Air4 Pro 的
 
 后续二次开发可尝试使用 HeyMelody 蓝牙控制协议的 OPPO Enco、OnePlus Buds 或 realme Buds 型号。产品名称相近不代表协议相同；每个型号都需要确认蓝牙产品 ID、命令格式和电量字段，并用实机验证后才能列为支持。
 
+## 参考项目与致谢
+
+感谢以下项目的作者和贡献者公开协议资料与实现经验，为 EncoBar 的开发提供了参考：
+
+- [OppoPods](https://github.com/Leaf-lsgtky/OppoPods)：参考其 HeyMelody 蓝牙协议笔记和耳机型号表，用于理解协议字段及 Air4 Pro 的型号识别。
+- [QuickBuds](https://github.com/spizganed/QuickBuds)：参考其蓝牙控制协议记录，辅助理解电量查询和降噪模式控制。
+- [cracked-oneplus-buds](https://github.com/AasheeshLikePanner/cracked-oneplus-buds)：参考其在 macOS 上控制耳机的实现思路。
+- [open-oneplus-buds](https://github.com/vedanth-jadhav/open-oneplus-buds)：参考其 macOS 菜单栏耳机控制工具的实现思路。
+
+EncoBar 使用 macOS 系统框架实现，当前没有第三方运行库依赖。具体资料链接见 [来源说明](NOTICE.md)，Air4 Pro 的实机验证结果见[协议与适配文档](docs/protocol.md)。
+
 ## 开发与许可
 
 本项目采用 [MIT 许可证](LICENSE)，允许使用和修改并保留署名。构建说明见[开发文档](docs/development.md)。本项目为独立社区工具，与 OPPO、OnePlus、realme 或 HeyMelody 无隶属关系。
